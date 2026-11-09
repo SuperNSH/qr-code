@@ -1,0 +1,10 @@
+[package]
+name = "nsh-qr-code"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+description = "Decode and generate QR codes for NSH apps."
+repository = "https://github.com/SuperNSH/qr-code"
+publish = false
+
+[dependencies]
