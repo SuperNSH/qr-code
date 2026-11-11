@@ -5,25 +5,202 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>nsh-qr-code</title>
 <style>
-  :root { color-scheme: light dark; --fg: #1d1d1f; --bg: #fff; --muted: #6e6e73; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #f5f5f7; --bg: #000; --muted: #a1a1a6; } }
+  :root { color-scheme: light dark; --fg: #1d1d1f; --bg: #fff; --muted: #6e6e73; --line: #d2d2d7; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f5f5f7; --bg: #000; --muted: #a1a1a6; --line: #38383d; } }
   body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg);
          font: 16px/1.5 system-ui, sans-serif; }
-  main { max-width: 680px; margin: 0 auto; }
+  main { max-width: 920px; margin: 0 auto; }
   h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  h2 { font-size: 1.25rem; margin: 32px 0 8px; }
+  h3 { font-size: 1.05rem; margin: 24px 0 4px; }
   p { margin: 8px 0; }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 2px 0; }
   .muted { color: var(--muted); }
   a { color: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 20px; font-size: 0.875rem; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: rgba(127, 127, 127, 0.1); }
+  code { font: 0.85em ui-monospace, SFMono-Regular, Menlo, monospace;
+         background: rgba(127, 127, 127, 0.14); padding: 1px 4px; border-radius: 4px; }
 </style>
 </head>
 <body>
 <main>
   <h1>nsh-qr-code</h1>
   <p>Decode and generate QR codes for NSH apps.</p>
-  <p><strong>Status: scaffold.</strong> No implementation yet. This page is a status page, not a demo.</p>
+  <p><strong>Status: in progress.</strong> Nothing here is verified until a CI run on <code>master</code> passes a test for it. This page is a status page, not a demo.</p>
   <p class="muted">Planned approach and edge cases: <a href="https://github.com/SuperNSH/qr-code/blob/master/docs/brief.md">docs/brief.md</a>.</p>
   <p class="muted">Feature status: <a href="https://github.com/SuperNSH/qr-code/blob/master/docs/parity.md">docs/parity.md</a>.</p>
   <p class="muted">Source: <a href="https://github.com/SuperNSH/qr-code">SuperNSH/qr-code</a>.</p>
+
+  <h2>Parity</h2>
+  <p>Where each public API of the two references lands in this library: <a href="https://pub.dev/packages/mobile_scanner">mobile_scanner</a> (Flutter) and the barcode scanner of <a href="https://github.com/mrousavy/react-native-vision-camera">react-native-vision-camera</a>, package <code>react-native-vision-camera-barcode-scanner</code>. Both are cloned read-only under <code>.refs/</code>; every API named below was read there.</p>
+  <ul>
+    <li><strong>implemented — awaiting first passing CI run</strong> — the contract names the feature, but no CI run on <code>master</code> has passed a test for it, so the row is unverified.</li>
+    <li><strong>not ours — camera controls belong to the camera repo (nsh-camera)</strong> — a camera control this library deliberately lacks; <a href="https://github.com/SuperNSH/nsh-camera">SuperNSH/nsh-camera</a> owns it.</li>
+    <li><strong>out of scope: QR only</strong> — rides on multi-symbology support this library never has.</li>
+    <li><strong>no equivalent</strong> — a reference state our design cannot express.</li>
+  </ul>
+  <p class="muted">Rust names are <code>snake_case</code> in <code>crates/nsh-qr-code</code>; TS names are the camelCase mirrors in <code>packages/nsh-qr-code</code> (<code>scan</code>, <code>stop</code>, <code>cameraPermission</code>, <code>requestCameraPermission</code>, <code>decodeFrame</code>, <code>generate</code>, <code>toSvg</code>, <code>memoryBackend</code>, <code>rustBackend</code>, <code>useQrScanner</code>).</p>
+
+  <h2>mobile_scanner</h2>
+
+  <h3><code>MobileScanner</code> widget</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>MobileScanner</code> (the widget itself)</td><td>none — the app renders the camera repo's preview and calls <code>QrScanner.scan</code> (<code>useQrScanner</code> in TS)</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>the widget is a live camera preview; this library decodes and generates</td></tr>
+      <tr><td><code>controller</code></td><td><code>QrScanner::new</code> / <code>QrScanner::with_backend</code>; TS <code>new QrScanner(backend)</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>onDetect</code></td><td><code>scan</code> — the first <code>DecodedQr</code> wins; a second concurrent scan fails <code>ERR_QR_ALREADY_RUNNING</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>onDetectError</code></td><td>every failure returns from <code>scan</code> as an <code>ERR_QR_*</code> code; nothing is swallowed silently</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>errorBuilder</code></td><td>none — the app renders the coded failure itself</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>error UI for a dead preview is preview UI</td></tr>
+      <tr><td><code>placeholderBuilder</code></td><td>none</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>the placeholder covers camera warm-up</td></tr>
+      <tr><td><code>fit</code></td><td>none</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>preview scaling belongs to the preview</td></tr>
+      <tr><td><code>overlayBuilder</code> (<code>BarcodeOverlay</code>, <code>ScanWindowOverlay</code>)</td><td>none — the app draws its own chrome; <code>QrMatrix.to_svg</code> renders generated codes</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>overlay geometry is preview geometry</td></tr>
+      <tr><td><code>scanWindow</code>, <code>scanWindowUpdateThreshold</code>, <code>updateScanWindow()</code></td><td>none — <code>decode_frame</code> reads the whole frame; a caller crops the luma plane to restrict the region</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>the window is laid out in preview coordinates, which exist only with the camera repo's preview</td></tr>
+      <tr><td><code>useAppLifecycleState</code></td><td>none — <code>stop</code> resolves a running scan with <code>ERR_QR_CANCELLED</code> when the app goes away</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>camera lifecycle on background/foreground is the host app's and the camera repo's</td></tr>
+      <tr><td><code>tapToFocus</code></td><td>none</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>focus is camera hardware</td></tr>
+    </tbody>
+  </table>
+
+  <h3><code>MobileScannerController</code></h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>start()</code></td><td><code>QrScanner.scan</code> with <code>ScanOptions { timeout }</code> — one scan at a time; permission is requested through the backend on demand</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>stop()</code> / <code>pause()</code></td><td><code>stop() -&gt; bool</code> — resolves the running scan with <code>ERR_QR_CANCELLED</code> and returns <code>true</code>; a stop with nothing running returns <code>false</code>. Not scanning is "paused": frames are pulled, never pushed</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>dispose()</code></td><td>no method — drop the <code>QrScanner</code> (Rust <code>Drop</code> releases it); <code>stop</code> first to cancel a scan still running</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>autoStart</code></td><td>none — a new <code>QrScanner</code> starts nothing; scanning begins only at <code>scan</code></td><td>implemented — awaiting first passing CI run</td><td>the guard is <code>ERR_QR_ALREADY_RUNNING</code> on a second <code>scan</code></td></tr>
+      <tr><td><code>torchEnabled</code>, <code>autoTorch</code>, <code>toggleTorch()</code>, <code>TorchState</code></td><td>none</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>the flashlight is camera hardware</td></tr>
+      <tr><td><code>initialZoom</code>, <code>autoZoom</code>, <code>setZoomScale()</code>, <code>resetZoomScale()</code>, <code>zoomScale</code>, <code>setFocusPoint()</code></td><td>none</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>zoom and focus are camera hardware</td></tr>
+      <tr><td><code>facing</code>, <code>switchCamera()</code> (<code>ToggleDirection</code>, <code>ToggleLensType</code>, <code>SelectCamera</code>), <code>getSupportedLenses()</code>, <code>getBestCloseRangeScanningLens()</code>, <code>CameraFacing</code>, <code>CameraLensType</code></td><td>none — which camera feeds the frames is the camera repo's choice; ours decodes any luma frame</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>camera selection</td></tr>
+      <tr><td><code>buildCameraView()</code></td><td>none — the preview view is the camera repo's; the app embeds it, not us</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>it renders the camera preview</td></tr>
+      <tr><td><code>analyzeImage(path)</code></td><td><code>decode_frame</code> — a still image decodes once the caller turns it into a luma <code>Frame</code> (the TS native module's <code>decodeImage</code> does that conversion)</td><td>implemented — awaiting first passing CI run</td><td>ours takes bytes, never file paths</td></tr>
+      <tr><td><code>barcodes</code> stream and <code>BarcodeCapture</code> (<code>barcodes</code>, <code>image</code>, <code>raw</code>, <code>size</code>)</td><td><code>scan</code> yields one <code>DecodedQr</code>; <code>decode_frame</code> returns every code in one frame as <code>Vec&lt;DecodedQr&gt;</code></td><td>implemented — awaiting first passing CI run</td><td>no broadcast stream, and the input frame does not come back — it belongs to the <code>FrameSource</code></td></tr>
+      <tr><td><code>formats</code> (<code>List&lt;BarcodeFormat&gt;</code>)</td><td>none — there is no format list to configure</td><td>out of scope: QR only</td><td>rqrr decodes QR; the other symbologies are out</td></tr>
+      <tr><td><code>detectionTimeoutMs</code></td><td><code>ScanOptions { timeout }</code> — ends the scan with <code>ERR_QR_TIMEOUT</code></td><td>implemented — awaiting first passing CI run</td><td>theirs throttles pushes; ours deadlines a pull</td></tr>
+      <tr><td><code>cameraResolution</code>, <code>lensType</code>, <code>detectionSpeed</code>, <code>returnImage</code>, <code>invertImage</code></td><td>none — the camera repo owns the pipeline behind <code>FrameSource</code>; <code>decode_frame</code> takes the luma plane as given (pre-invert white-on-black codes there) and returns only <code>DecodedQr</code> values</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>these knobs tune the frame producer, which this repo does not have</td></tr>
+      <tr><td><code>MobileScannerState</code> (incl. <code>hasCameraPermission</code>)</td><td>no state object — permission reads go through <code>Backend::camera_permission</code>; "running" is whether a <code>scan</code> is in flight</td><td>implemented — awaiting first passing CI run</td><td>ours has no camera state to mirror — the camera owns it</td></tr>
+    </tbody>
+  </table>
+
+  <h3><code>Barcode</code> and its objects</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>Barcode</code></td><td><code>DecodedQr { text, bytes, ec_level, version, corners }</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>corners</code>, <code>scaleCorners()</code></td><td><code>DecodedQr.corners</code> — four frame-relative points; the app scales them to view coordinates</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>size</code></td><td>none as a field — derive the box from <code>corners</code></td><td>implemented — awaiting first passing CI run</td><td><code>QrMatrix.size</code> is the generated module count, not a decode result</td></tr>
+      <tr><td><code>rawValue</code>, <code>displayValue</code></td><td><code>DecodedQr.text</code> — lossy UTF-8</td><td>implemented — awaiting first passing CI run</td><td>one value, not two: nothing is parsed out of the payload</td></tr>
+      <tr><td><code>rawBytes</code>, <code>rawDecodedBytes</code> (<code>BarcodeBytes</code>)</td><td><code>DecodedQr.bytes</code> — payload verbatim, so non-UTF-8 survives</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>format</code> / <code>BarcodeFormat</code> (all values)</td><td>none — a decode that succeeds is QR, so <code>DecodedQr</code> carries no format field</td><td>out of scope: QR only</td><td><code>qrCode</code> is the one value this library keeps</td></tr>
+      <tr><td><code>type</code> / <code>BarcodeType</code>, and the structured payloads <code>calendarEvent</code>, <code>contactInfo</code>, <code>driverLicense</code>, <code>email</code>, <code>geoPoint</code>, <code>phone</code>, <code>sms</code>, <code>url</code>, <code>wifi</code></td><td>none — <code>text</code> and <code>bytes</code> come back unparsed; URL, WiFi and contact schemas are app logic</td><td>out of scope: QR only</td><td>payload classification rides on multi-symbology support</td></tr>
+    </tbody>
+  </table>
+
+  <h3><code>MobileScannerErrorCode</code> (all eight) and the exception types</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>controllerAlreadyInitialized</code></td><td><code>ERR_QR_ALREADY_RUNNING</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>controllerInitializing</code></td><td><code>ERR_QR_ALREADY_RUNNING</code> — a second <code>scan</code> while one runs</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>permissionDenied</code></td><td><code>ERR_QR_PERMISSION_DENIED</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>unsupported</code></td><td><code>ERR_QR_UNSUPPORTED</code> — also what a <code>scan</code> answers while <code>frame_source()</code> returns <code>Ok(None)</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>genericError</code></td><td><code>ERR_QR_BACKEND</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>controllerDisposed</code></td><td>none — Rust ownership makes use-after-drop unrepresentable; the TS wrapper dies with the scanner</td><td>no equivalent</td><td>the state cannot occur</td></tr>
+      <tr><td><code>controllerUninitialized</code></td><td>none — <code>QrScanner::new</code> is ready immediately</td><td>no equivalent</td><td>there is no uninitialized state</td></tr>
+      <tr><td><code>controllerNotAttached</code></td><td>none — there is no widget to attach to</td><td>no equivalent</td><td>the state cannot occur</td></tr>
+      <tr><td><code>MobileScannerException</code>, <code>MobileScannerErrorDetails</code>, <code>MobileScannerBarcodeException</code></td><td>one <code>QrError</code> per failure with a stable code and message (<code>Display</code> prints the code); a found-but-unreadable code is <code>ERR_QR_DECODE_FAILED</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h3><code>MobileScannerAuthorizationState</code></h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>MobileScannerAuthorizationState</code> (<code>undetermined</code>, <code>authorized</code>, <code>denied</code>)</td><td><code>PermissionState { Undetermined, Granted, Denied }</code> from <code>Backend::camera_permission</code> and <code>Backend::request_camera_permission</code>; TS <code>cameraPermission()</code> / <code>requestCameraPermission()</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h2>react-native-vision-camera</h2>
+
+  <h3>Scanner</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>useBarcodeScanner({ barcodeFormats })</code>, <code>createBarcodeScanner()</code></td><td>TS <code>useQrScanner</code> hook and <code>new QrScanner(backend)</code> (<code>rustBackend</code>, <code>memoryBackend</code>); Rust <code>QrScanner::new</code> / <code>QrScanner::with_backend</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>BarcodeScannerOptions.barcodeFormats</code>, <code>TargetBarcodeFormat</code> (<code>'all-formats'</code>)</td><td>none — no format list exists</td><td>out of scope: QR only</td><td>QR is the only symbology</td></tr>
+      <tr><td><code>BarcodeScanner.scanCodes(frame)</code></td><td><code>decode_frame</code> / TS <code>decodeFrame</code></td><td>implemented — awaiting first passing CI run</td><td>a plain call, not a worklet</td></tr>
+      <tr><td><code>BarcodeScanner.scanCodesAsync(frame)</code></td><td>the same <code>decode_frame</code> / <code>decodeFrame</code>, awaited</td><td>implemented — awaiting first passing CI run</td><td>every call resolves exactly once</td></tr>
+      <tr><td><code>BarcodeScanner.scanCodesInImageAsync(image)</code></td><td><code>decode_frame</code> on a luma frame built from the image (TS native <code>decodeImage</code>)</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Output and view</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>useBarcodeScannerOutput(...)</code>, <code>createBarcodeScannerOutput(...)</code> (<code>onBarcodeScanned</code>, <code>onError</code>)</td><td><code>QrScanner.scan</code> pulling <code>Backend::frame_source</code> — <code>FrameSource::next_frame</code> / <code>cancel</code> is the seam the camera repo implements; the first <code>DecodedQr</code> wins, failures arrive as <code>ERR_QR_*</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>BarcodeScannerOutputOptions.outputResolution</code> (<code>'preview'</code>, <code>'full'</code>)</td><td>none</td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>buffer size is the frame producer's choice</td></tr>
+      <tr><td><code>&lt;CodeScanner /&gt;</code> (<code>isActive</code>, <code>style</code>)</td><td>none — the app composes its own view and scans with <code>useQrScanner</code></td><td>not ours — camera controls belong to the camera repo (nsh-camera)</td><td>it is a camera preview component</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Types</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>BarcodeFormat</code> union, <code>TargetBarcodeFormat</code></td><td>none — <code>DecodedQr</code> has no format field</td><td>out of scope: QR only</td><td><code>'qr-code'</code> is the one member kept</td></tr>
+      <tr><td><code>BarcodeValueType</code></td><td>none — payload classification is app logic over <code>text</code> / <code>bytes</code></td><td>out of scope: QR only</td><td></td></tr>
+      <tr><td><code>Point { x, y }</code></td><td><code>DecodedQr.corners</code> — four points, no standalone type</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>Rect { left, top, right, bottom }</code> (<code>boundingBox</code>)</td><td><code>corners</code> — four corners instead of an axis-aligned rect</td><td>implemented — awaiting first passing CI run</td><td>corners survive perspective</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Permissions</h3>
+  <table>
+    <thead><tr><th>Reference API</th><th>Ours</th><th>Status</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>PermissionStatus</code> (<code>'not-determined'</code>, <code>'authorized'</code>, <code>'denied'</code>, <code>'restricted'</code>)</td><td><code>PermissionState { Undetermined, Granted, Denied }</code></td><td>implemented — awaiting first passing CI run</td><td><code>'restricted'</code> collapses into <code>Denied</code></td></tr>
+      <tr><td><code>VisionCamera.cameraPermissionStatus</code>, <code>VisionCamera.requestCameraPermission(): Promise&lt;boolean&gt;</code></td><td><code>Backend::camera_permission</code> / <code>Backend::request_camera_permission</code>, bridged on Apple, Android, Windows, Linux and web</td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>useCameraPermission()</code> (<code>status</code>, <code>requestPermission</code>, <code>hasPermission</code>, <code>canRequestPermission</code>)</td><td>TS <code>QrScanner.cameraPermission()</code> / <code>requestCameraPermission()</code>; <code>Granted</code> answers <code>hasPermission</code>, <code>Undetermined</code> answers <code>canRequestPermission</code></td><td>implemented — awaiting first passing CI run</td><td></td></tr>
+      <tr><td><code>useMicrophonePermission()</code></td><td>none</td><td>no equivalent</td><td>a QR library has no microphone</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Our error codes against both references</h2>
+  <p>The ten <code>ERR_QR_*</code> codes, and the nearest thing each reference has:</p>
+  <table>
+    <thead><tr><th>Code</th><th>Nearest in mobile_scanner</th><th>Nearest in vision-camera</th></tr></thead>
+    <tbody>
+      <tr><td><code>ERR_QR_DECODE_FAILED</code></td><td><code>MobileScannerBarcodeException</code></td><td><code>Error</code> in <code>onError</code></td></tr>
+      <tr><td><code>ERR_QR_PAYLOAD_TOO_LARGE</code></td><td>none</td><td>none</td></tr>
+      <tr><td><code>ERR_QR_INVALID_ARGUMENT</code></td><td>none — Dart asserts</td><td>none — throws <code>TypeError</code></td></tr>
+      <tr><td><code>ERR_QR_PERMISSION_DENIED</code></td><td><code>MobileScannerErrorCode.permissionDenied</code></td><td><code>'denied'</code> permission status</td></tr>
+      <tr><td><code>ERR_QR_UNSUPPORTED</code></td><td><code>MobileScannerErrorCode.unsupported</code></td><td>none</td></tr>
+      <tr><td><code>ERR_QR_ALREADY_RUNNING</code></td><td><code>controllerAlreadyInitialized</code>, <code>controllerInitializing</code></td><td>none</td></tr>
+      <tr><td><code>ERR_QR_CANCELLED</code></td><td>none — <code>stop()</code> is silent</td><td>none</td></tr>
+      <tr><td><code>ERR_QR_TIMEOUT</code></td><td>none — <code>detectionTimeoutMs</code> throttles, it does not deadline</td><td>none</td></tr>
+      <tr><td><code>ERR_QR_FRAME_SOURCE_CLOSED</code></td><td>none</td><td>none</td></tr>
+      <tr><td><code>ERR_QR_BACKEND</code></td><td><code>MobileScannerErrorCode.genericError</code></td><td><code>Error</code> in <code>onError</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Ours beyond both references</h2>
+  <p>Neither reference generates codes, and both own their cameras. Everything below is implemented — awaiting first passing CI run.</p>
+  <table>
+    <thead><tr><th>Ours</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td><code>generate(data, &amp;GenerateOptions) -&gt; QrMatrix</code> / TS <code>generate</code></td><td>builds the module matrix; empty data is <code>ERR_QR_INVALID_ARGUMENT</code>, oversize data is <code>ERR_QR_PAYLOAD_TOO_LARGE</code></td></tr>
+      <tr><td><code>GenerateOptions { ec_level, quiet_zone }</code></td><td><code>ec_level: None</code> picks by payload length: High up to 255 bytes, Medium up to 1071, Low above</td></tr>
+      <tr><td><code>EccLevel { Low, Medium, Quartile, High }</code></td><td>the error-correction choice for generation</td></tr>
+      <tr><td><code>QrMatrix { size, modules, ec_level, version }</code>, <code>to_svg()</code> / TS <code>toSvg</code></td><td>the SVG keeps the quiet zone</td></tr>
+      <tr><td><code>FrameSource</code> (<code>next_frame</code>, <code>cancel</code>)</td><td>the seam nsh-camera implements; each <code>next_frame</code> resolves exactly once, and a closed source keeps answering <code>ERR_QR_FRAME_SOURCE_CLOSED</code></td></tr>
+      <tr><td><code>FakeBackend</code>, <code>FakeFrameSource</code> / TS <code>memoryBackend</code>, <code>fakeFrameSource</code></td><td>headless tests with no camera</td></tr>
+      <tr><td>Platform bridges (Apple, Android, Windows, Linux, web)</td><td>permission bridges now; <code>frame_source()</code> answers <code>Ok(None)</code> until the camera repo registers a source, and a <code>scan</code> then fails <code>ERR_QR_UNSUPPORTED</code></td></tr>
+    </tbody>
+  </table>
 </main>
 </body>
 </html>

@@ -1,0 +1,8 @@
+{
+  "name": "nsh-qr-code tests",
+  "id": "dev.supernsh.qrcode.tests",
+  "version": "0.1.0",
+  "build": 1,
+  "rust": "../../crates/nsh-qr-code",
+  "capabilities": {}
+}

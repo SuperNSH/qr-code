@@ -1,0 +1,45 @@
+[package]
+name = "nsh-qr-code"
+description = "Decode and generate QR codes for NSH apps."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "nsh_qr_code"
+path = "src/lib.rs"
+
+[dependencies]
+nsh-core = "0.4.0"
+thiserror = "2"
+# `macros` is a lib need, not a test need: scan_frames' select! (how a stop resolves mid-loop)
+# must compile on wasm32, where no other crate in the graph enables it.
+tokio = { version = "1", default-features = false, features = ["sync", "time", "macros"] }
+rqrr = { version = "0.11", default-features = false }
+# qrcode 0.14 has no `std` feature (the std/svg split is unreleased master): std is built in.
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+
+# Apple: AVCaptureDevice answers the camera permission; frames come from SuperNSH/nsh-camera.
+# AVMediaFormat vends AVMediaTypeVideo; block2 and objc2 build the request's completion block.
+[target.'cfg(target_vendor = "apple")'.dependencies]
+objc2-av-foundation = { version = "0.3", default-features = false, features = ["std", "AVCaptureDevice", "AVMediaFormat", "block2"] }
+block2 = { version = "0.6", default-features = false, features = ["std"] }
+objc2 = { version = "0.6", default-features = false, features = ["std"] }
+
+# Android: the permission dialog over JNI. ndk-context carries the VM.
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.22"
+ndk-context = "0.1"
+
+# Web: navigator.permissions and getUserMedia. js-sys builds the {name: "camera"} descriptor
+# (web-sys's PermissionName enum has no camera) and JsFuture awaits the browser's promises.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["Window", "Navigator", "MediaDevices", "MediaStreamConstraints", "MediaStream", "MediaStreamTrack", "Permissions", "PermissionStatus", "PermissionState"] }
+
+[dev-dependencies]
+tokio = { version = "1", default-features = false, features = ["rt", "time", "macros", "test-util"] }
