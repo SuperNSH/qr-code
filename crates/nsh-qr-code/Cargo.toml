@@ -12,7 +12,7 @@ name = "nsh_qr_code"
 path = "src/lib.rs"
 
 [dependencies]
-nsh-core = "0.4.0"
+nsh-core = "0.5.0"
 thiserror = "2"
 # `macros` is a lib need, not a test need: scan_frames' select! (how a stop resolves mid-loop)
 # must compile on wasm32, where no other crate in the graph enables it.
