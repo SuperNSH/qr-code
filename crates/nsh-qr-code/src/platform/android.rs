@@ -49,7 +49,7 @@ fn attached_context() -> Option<ndk_context::AndroidContext> {
     let _probe = PROBE.lock().unwrap_or_else(PoisonError::into_inner);
     let previous = std::panic::take_hook();
     std::panic::set_hook(Box::new(|_| {}));
-    let probe = catch_unwind(|| ndk_context::android_context());
+    let probe = catch_unwind(ndk_context::android_context);
     std::panic::set_hook(previous);
     probe.ok()
 }
