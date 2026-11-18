@@ -73,7 +73,7 @@ export class QrScanner {
       this.waiting = settle;
       if (options.timeoutMs !== undefined) {
         timer = setTimeout(() => {
-          settle({ ok: false, error: qrError("ERR_QR_CANCELLED") });
+          settle({ ok: false, error: qrError("ERR_QR_TIMEOUT") });
         }, options.timeoutMs);
       }
       const hunt = async (): Promise<void> => {
