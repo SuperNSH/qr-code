@@ -53,7 +53,7 @@ pub fn generate(data: &[u8], options: &GenerateOptions) -> Result<QrMatrix, QrEr
 
 /// The correction a payload of `len` bytes gets when none was asked for.
 pub(crate) fn auto_ecc(len: usize) -> EccLevel {
-    if len <= 255 {
+    if len <= 100 {
         EccLevel::High
     } else if len <= 1071 {
         EccLevel::Medium

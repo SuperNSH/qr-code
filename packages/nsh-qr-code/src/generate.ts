@@ -22,7 +22,7 @@ const CAPACITY: Record<EccLevel, number> = {
 
 // Smaller payloads get the strongest correction: the code stays small anyway.
 function levelFor(byteLength: number): EccLevel {
-  if (byteLength <= 255) return "high";
+  if (byteLength <= 100) return "high";
   if (byteLength <= 1071) return "medium";
   return "low";
 }

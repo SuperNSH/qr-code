@@ -101,7 +101,7 @@ impl QrScanner {
         let mut owner = {
             let mut gate = self.shared.gate();
             if gate.busy {
-                return Err(QrError::new(ErrorKind::AlreadyRunning));
+                return Err(QrError::new(ErrorKind::Backend));
             }
             gate.busy = true;
             let generation = gate.next_id;
