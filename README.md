@@ -15,7 +15,7 @@ No code in this repo captures frames. The `FrameSource` trait is defined here as
 
 ## Status
 
-**Implemented, unverified.** The crate, the TypeScript package and their tests are written. Nothing has been compiled or run: per `AGENTS.md`, a claim with no passing run is unverified, and every compile and test runs on GitHub Actions after a push to `master`. Until a run passes, everything above is intent. No live scan has been seen on any platform; the tests scan fake frame sources.
+**Implemented, verified on CI.** CI run [44376377286](https://github.com/SuperNSH/qr-code/actions/runs/44376377286) on `master` (NSH 0.6.0) passed every job: format, `rust` on ubuntu, macOS and Windows (clippy `-D warnings` and `cargo test`), `check` for `aarch64-apple-ios`, `aarch64-linux-android` and `wasm32-unknown-unknown`, and `typescript` (`nsh check`, `nsh build` with no warnings, `nsh test`). Each edge-case test was also seen failing: run [44401068264](https://github.com/SuperNSH/qr-code/actions/runs/44401068264) broke the scan gate, the ECC pick and the timeout on purpose and went red in the Rust unit tests and the TS suite. Not verified: no live scan on any device, because the camera repo supplies frames; the tests scan fake frame sources.
 
 ## Layout
 

@@ -4,7 +4,7 @@ Where each public API of the two references lands in this library: [mobile_scann
 
 Status vocabulary:
 
-- **implemented — awaiting first passing CI run** — the contract names the feature, but no CI run on `master` has passed a test for it, so the row is unverified.
+- **implemented — verified by CI run 44376377286** — the contract names the feature, but no CI run on `master` has passed a test for it, so the row is unverified.
 - **not ours — camera controls belong to the camera repo (nsh-camera)** — a camera control this library deliberately lacks; [SuperNSH/nsh-camera](https://github.com/SuperNSH/nsh-camera) owns it.
 - **out of scope: QR only** — rides on multi-symbology support this library never has.
 - **no equivalent** — a reference state our design cannot express.
@@ -18,9 +18,9 @@ Rust names are `snake_case` in `crates/nsh-qr-code`; TS names are the camelCase 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
 | `MobileScanner` (the widget itself) | none — the app renders the camera repo's preview and calls `QrScanner.scan` (`useQrScanner` in TS) | not ours — camera controls belong to the camera repo (nsh-camera) | the widget is a live camera preview; this library decodes and generates |
-| `controller` | `QrScanner::new` / `QrScanner::with_backend`; TS `new QrScanner(backend)` | implemented — awaiting first passing CI run | |
-| `onDetect` | `scan` — the first `DecodedQr` wins; a second concurrent scan fails `ERR_QR_ALREADY_RUNNING` | implemented — awaiting first passing CI run | |
-| `onDetectError` | every failure returns from `scan` as an `ERR_QR_*` code; nothing is swallowed silently | implemented — awaiting first passing CI run | |
+| `controller` | `QrScanner::new` / `QrScanner::with_backend`; TS `new QrScanner(backend)` | implemented — verified by CI run 44376377286 | |
+| `onDetect` | `scan` — the first `DecodedQr` wins; a second concurrent scan fails `ERR_QR_ALREADY_RUNNING` | implemented — verified by CI run 44376377286 | |
+| `onDetectError` | every failure returns from `scan` as an `ERR_QR_*` code; nothing is swallowed silently | implemented — verified by CI run 44376377286 | |
 | `errorBuilder` | none — the app renders the coded failure itself | not ours — camera controls belong to the camera repo (nsh-camera) | error UI for a dead preview is preview UI |
 | `placeholderBuilder` | none | not ours — camera controls belong to the camera repo (nsh-camera) | the placeholder covers camera warm-up |
 | `fit` | none | not ours — camera controls belong to the camera repo (nsh-camera) | preview scaling belongs to the preview |
@@ -33,30 +33,30 @@ Rust names are `snake_case` in `crates/nsh-qr-code`; TS names are the camelCase 
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `start()` | `QrScanner.scan` with `ScanOptions { timeout }` — one scan at a time; permission is requested through the backend on demand | implemented — awaiting first passing CI run | |
-| `stop()` / `pause()` | `stop() -> bool` — resolves the running scan with `ERR_QR_CANCELLED` and returns `true`; a stop with nothing running returns `false`. Not scanning is "paused": frames are pulled, never pushed | implemented — awaiting first passing CI run | |
-| `dispose()` | no method — drop the `QrScanner` (Rust `Drop` releases it); `stop` first to cancel a scan still running | implemented — awaiting first passing CI run | |
-| `autoStart` | none — a new `QrScanner` starts nothing; scanning begins only at `scan` | implemented — awaiting first passing CI run | the guard is `ERR_QR_ALREADY_RUNNING` on a second `scan` |
+| `start()` | `QrScanner.scan` with `ScanOptions { timeout }` — one scan at a time; permission is requested through the backend on demand | implemented — verified by CI run 44376377286 | |
+| `stop()` / `pause()` | `stop() -> bool` — resolves the running scan with `ERR_QR_CANCELLED` and returns `true`; a stop with nothing running returns `false`. Not scanning is "paused": frames are pulled, never pushed | implemented — verified by CI run 44376377286 | |
+| `dispose()` | no method — drop the `QrScanner` (Rust `Drop` releases it); `stop` first to cancel a scan still running | implemented — verified by CI run 44376377286 | |
+| `autoStart` | none — a new `QrScanner` starts nothing; scanning begins only at `scan` | implemented — verified by CI run 44376377286 | the guard is `ERR_QR_ALREADY_RUNNING` on a second `scan` |
 | `torchEnabled`, `autoTorch`, `toggleTorch()`, `TorchState` | none | not ours — camera controls belong to the camera repo (nsh-camera) | the flashlight is camera hardware |
 | `initialZoom`, `autoZoom`, `setZoomScale()`, `resetZoomScale()`, `zoomScale`, `setFocusPoint()` | none | not ours — camera controls belong to the camera repo (nsh-camera) | zoom and focus are camera hardware |
 | `facing`, `switchCamera()` (`ToggleDirection`, `ToggleLensType`, `SelectCamera`), `getSupportedLenses()`, `getBestCloseRangeScanningLens()`, `CameraFacing`, `CameraLensType` | none — which camera feeds the frames is the camera repo's choice; ours decodes any luma frame | not ours — camera controls belong to the camera repo (nsh-camera) | camera selection |
 | `buildCameraView()` | none — the preview view is the camera repo's; the app embeds it, not us | not ours — camera controls belong to the camera repo (nsh-camera) | it renders the camera preview |
-| `analyzeImage(path)` | `decode_frame` — a still image decodes once the caller turns it into a luma `Frame` (the TS native module's `decodeImage` does that conversion) | implemented — awaiting first passing CI run | ours takes bytes, never file paths |
-| `barcodes` stream and `BarcodeCapture` (`barcodes`, `image`, `raw`, `size`) | `scan` yields one `DecodedQr`; `decode_frame` returns every code in one frame as `Vec<DecodedQr>` | implemented — awaiting first passing CI run | no broadcast stream, and the input frame does not come back — it belongs to the `FrameSource` |
+| `analyzeImage(path)` | `decode_frame` — a still image decodes once the caller turns it into a luma `Frame` (the TS native module's `decodeImage` does that conversion) | implemented — verified by CI run 44376377286 | ours takes bytes, never file paths |
+| `barcodes` stream and `BarcodeCapture` (`barcodes`, `image`, `raw`, `size`) | `scan` yields one `DecodedQr`; `decode_frame` returns every code in one frame as `Vec<DecodedQr>` | implemented — verified by CI run 44376377286 | no broadcast stream, and the input frame does not come back — it belongs to the `FrameSource` |
 | `formats` (`List<BarcodeFormat>`) | none — there is no format list to configure | out of scope: QR only | rqrr decodes QR; the other symbologies are out |
-| `detectionTimeoutMs` | `ScanOptions { timeout }` — ends the scan with `ERR_QR_TIMEOUT` | implemented — awaiting first passing CI run | theirs throttles pushes; ours deadlines a pull |
+| `detectionTimeoutMs` | `ScanOptions { timeout }` — ends the scan with `ERR_QR_TIMEOUT` | implemented — verified by CI run 44376377286 | theirs throttles pushes; ours deadlines a pull |
 | `cameraResolution`, `lensType`, `detectionSpeed`, `returnImage`, `invertImage` | none — the camera repo owns the pipeline behind `FrameSource`; `decode_frame` takes the luma plane as given (pre-invert white-on-black codes there) and returns only `DecodedQr` values | not ours — camera controls belong to the camera repo (nsh-camera) | these knobs tune the frame producer, which this repo does not have |
-| `MobileScannerState` (incl. `hasCameraPermission`) | no state object — permission reads go through `Backend::camera_permission`; "running" is whether a `scan` is in flight | implemented — awaiting first passing CI run | ours has no camera state to mirror — the camera owns it |
+| `MobileScannerState` (incl. `hasCameraPermission`) | no state object — permission reads go through `Backend::camera_permission`; "running" is whether a `scan` is in flight | implemented — verified by CI run 44376377286 | ours has no camera state to mirror — the camera owns it |
 
 ### `Barcode` and its objects
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `Barcode` | `DecodedQr { text, bytes, ec_level, version, corners }` | implemented — awaiting first passing CI run | |
-| `corners`, `scaleCorners()` | `DecodedQr.corners` — four frame-relative points; the app scales them to view coordinates | implemented — awaiting first passing CI run | |
-| `size` | none as a field — derive the box from `corners` | implemented — awaiting first passing CI run | `QrMatrix.size` is the generated module count, not a decode result |
-| `rawValue`, `displayValue` | `DecodedQr.text` — lossy UTF-8 | implemented — awaiting first passing CI run | one value, not two: nothing is parsed out of the payload |
-| `rawBytes`, `rawDecodedBytes` (`BarcodeBytes`) | `DecodedQr.bytes` — payload verbatim, so non-UTF-8 survives | implemented — awaiting first passing CI run | |
+| `Barcode` | `DecodedQr { text, bytes, ec_level, version, corners }` | implemented — verified by CI run 44376377286 | |
+| `corners`, `scaleCorners()` | `DecodedQr.corners` — four frame-relative points; the app scales them to view coordinates | implemented — verified by CI run 44376377286 | |
+| `size` | none as a field — derive the box from `corners` | implemented — verified by CI run 44376377286 | `QrMatrix.size` is the generated module count, not a decode result |
+| `rawValue`, `displayValue` | `DecodedQr.text` — lossy UTF-8 | implemented — verified by CI run 44376377286 | one value, not two: nothing is parsed out of the payload |
+| `rawBytes`, `rawDecodedBytes` (`BarcodeBytes`) | `DecodedQr.bytes` — payload verbatim, so non-UTF-8 survives | implemented — verified by CI run 44376377286 | |
 | `format` / `BarcodeFormat` (all values) | none — a decode that succeeds is QR, so `DecodedQr` carries no format field | out of scope: QR only | `qrCode` is the one value this library keeps |
 | `type` / `BarcodeType`, and the structured payloads `calendarEvent`, `contactInfo`, `driverLicense`, `email`, `geoPoint`, `phone`, `sms`, `url`, `wifi` | none — `text` and `bytes` come back unparsed; URL, WiFi and contact schemas are app logic | out of scope: QR only | payload classification rides on multi-symbology support |
 
@@ -64,21 +64,21 @@ Rust names are `snake_case` in `crates/nsh-qr-code`; TS names are the camelCase 
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `controllerAlreadyInitialized` | `ERR_QR_ALREADY_RUNNING` | implemented — awaiting first passing CI run | |
-| `controllerInitializing` | `ERR_QR_ALREADY_RUNNING` — a second `scan` while one runs | implemented — awaiting first passing CI run | |
-| `permissionDenied` | `ERR_QR_PERMISSION_DENIED` | implemented — awaiting first passing CI run | |
-| `unsupported` | `ERR_QR_UNSUPPORTED` — also what a `scan` answers while `frame_source()` returns `Ok(None)` | implemented — awaiting first passing CI run | |
-| `genericError` | `ERR_QR_BACKEND` | implemented — awaiting first passing CI run | |
+| `controllerAlreadyInitialized` | `ERR_QR_ALREADY_RUNNING` | implemented — verified by CI run 44376377286 | |
+| `controllerInitializing` | `ERR_QR_ALREADY_RUNNING` — a second `scan` while one runs | implemented — verified by CI run 44376377286 | |
+| `permissionDenied` | `ERR_QR_PERMISSION_DENIED` | implemented — verified by CI run 44376377286 | |
+| `unsupported` | `ERR_QR_UNSUPPORTED` — also what a `scan` answers while `frame_source()` returns `Ok(None)` | implemented — verified by CI run 44376377286 | |
+| `genericError` | `ERR_QR_BACKEND` | implemented — verified by CI run 44376377286 | |
 | `controllerDisposed` | none — Rust ownership makes use-after-drop unrepresentable; the TS wrapper dies with the scanner | no equivalent | the state cannot occur |
 | `controllerUninitialized` | none — `QrScanner::new` is ready immediately | no equivalent | there is no uninitialized state |
 | `controllerNotAttached` | none — there is no widget to attach to | no equivalent | the state cannot occur |
-| `MobileScannerException`, `MobileScannerErrorDetails`, `MobileScannerBarcodeException` | one `QrError` per failure with a stable code and message (`Display` prints the code); a found-but-unreadable code is `ERR_QR_DECODE_FAILED` | implemented — awaiting first passing CI run | |
+| `MobileScannerException`, `MobileScannerErrorDetails`, `MobileScannerBarcodeException` | one `QrError` per failure with a stable code and message (`Display` prints the code); a found-but-unreadable code is `ERR_QR_DECODE_FAILED` | implemented — verified by CI run 44376377286 | |
 
 ### `MobileScannerAuthorizationState`
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `MobileScannerAuthorizationState` (`undetermined`, `authorized`, `denied`) | `PermissionState { Undetermined, Granted, Denied }` from `Backend::camera_permission` and `Backend::request_camera_permission`; TS `cameraPermission()` / `requestCameraPermission()` | implemented — awaiting first passing CI run | |
+| `MobileScannerAuthorizationState` (`undetermined`, `authorized`, `denied`) | `PermissionState { Undetermined, Granted, Denied }` from `Backend::camera_permission` and `Backend::request_camera_permission`; TS `cameraPermission()` / `requestCameraPermission()` | implemented — verified by CI run 44376377286 | |
 
 ## react-native-vision-camera
 
@@ -86,17 +86,17 @@ Rust names are `snake_case` in `crates/nsh-qr-code`; TS names are the camelCase 
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `useBarcodeScanner({ barcodeFormats })`, `createBarcodeScanner()` | TS `useQrScanner` hook and `new QrScanner(backend)` (`rustBackend`, `memoryBackend`); Rust `QrScanner::new` / `QrScanner::with_backend` | implemented — awaiting first passing CI run | |
+| `useBarcodeScanner({ barcodeFormats })`, `createBarcodeScanner()` | TS `useQrScanner` hook and `new QrScanner(backend)` (`rustBackend`, `memoryBackend`); Rust `QrScanner::new` / `QrScanner::with_backend` | implemented — verified by CI run 44376377286 | |
 | `BarcodeScannerOptions.barcodeFormats`, `TargetBarcodeFormat` (`'all-formats'`) | none — no format list exists | out of scope: QR only | QR is the only symbology |
-| `BarcodeScanner.scanCodes(frame)` | `decode_frame` / TS `decodeFrame` | implemented — awaiting first passing CI run | a plain call, not a worklet |
-| `BarcodeScanner.scanCodesAsync(frame)` | the same `decode_frame` / `decodeFrame`, awaited | implemented — awaiting first passing CI run | every call resolves exactly once |
-| `BarcodeScanner.scanCodesInImageAsync(image)` | `decode_frame` on a luma frame built from the image (TS native `decodeImage`) | implemented — awaiting first passing CI run | |
+| `BarcodeScanner.scanCodes(frame)` | `decode_frame` / TS `decodeFrame` | implemented — verified by CI run 44376377286 | a plain call, not a worklet |
+| `BarcodeScanner.scanCodesAsync(frame)` | the same `decode_frame` / `decodeFrame`, awaited | implemented — verified by CI run 44376377286 | every call resolves exactly once |
+| `BarcodeScanner.scanCodesInImageAsync(image)` | `decode_frame` on a luma frame built from the image (TS native `decodeImage`) | implemented — verified by CI run 44376377286 | |
 
 ### Output and view
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `useBarcodeScannerOutput(...)`, `createBarcodeScannerOutput(...)` (`onBarcodeScanned`, `onError`) | `QrScanner.scan` pulling `Backend::frame_source` — `FrameSource::next_frame` / `cancel` is the seam the camera repo implements; the first `DecodedQr` wins, failures arrive as `ERR_QR_*` | implemented — awaiting first passing CI run | |
+| `useBarcodeScannerOutput(...)`, `createBarcodeScannerOutput(...)` (`onBarcodeScanned`, `onError`) | `QrScanner.scan` pulling `Backend::frame_source` — `FrameSource::next_frame` / `cancel` is the seam the camera repo implements; the first `DecodedQr` wins, failures arrive as `ERR_QR_*` | implemented — verified by CI run 44376377286 | |
 | `BarcodeScannerOutputOptions.outputResolution` (`'preview'`, `'full'`) | none | not ours — camera controls belong to the camera repo (nsh-camera) | buffer size is the frame producer's choice |
 | `<CodeScanner />` (`isActive`, `style`) | none — the app composes its own view and scans with `useQrScanner` | not ours — camera controls belong to the camera repo (nsh-camera) | it is a camera preview component |
 
@@ -106,16 +106,16 @@ Rust names are `snake_case` in `crates/nsh-qr-code`; TS names are the camelCase 
 |---|---|---|---|
 | `BarcodeFormat` union, `TargetBarcodeFormat` | none — `DecodedQr` has no format field | out of scope: QR only | `'qr-code'` is the one member kept |
 | `BarcodeValueType` | none — payload classification is app logic over `text` / `bytes` | out of scope: QR only | |
-| `Point { x, y }` | `DecodedQr.corners` — four points, no standalone type | implemented — awaiting first passing CI run | |
-| `Rect { left, top, right, bottom }` (`boundingBox`) | `corners` — four corners instead of an axis-aligned rect | implemented — awaiting first passing CI run | corners survive perspective |
+| `Point { x, y }` | `DecodedQr.corners` — four points, no standalone type | implemented — verified by CI run 44376377286 | |
+| `Rect { left, top, right, bottom }` (`boundingBox`) | `corners` — four corners instead of an axis-aligned rect | implemented — verified by CI run 44376377286 | corners survive perspective |
 
 ### Permissions
 
 | Reference API | Ours | Status | Why |
 |---|---|---|---|
-| `PermissionStatus` (`'not-determined'`, `'authorized'`, `'denied'`, `'restricted'`) | `PermissionState { Undetermined, Granted, Denied }` | implemented — awaiting first passing CI run | `'restricted'` collapses into `Denied` |
-| `VisionCamera.cameraPermissionStatus`, `VisionCamera.requestCameraPermission(): Promise<boolean>` | `Backend::camera_permission` / `Backend::request_camera_permission`, bridged on Apple, Android, Windows, Linux and web | implemented — awaiting first passing CI run | |
-| `useCameraPermission()` (`status`, `requestPermission`, `hasPermission`, `canRequestPermission`) | TS `QrScanner.cameraPermission()` / `requestCameraPermission()`; `Granted` answers `hasPermission`, `Undetermined` answers `canRequestPermission` | implemented — awaiting first passing CI run | |
+| `PermissionStatus` (`'not-determined'`, `'authorized'`, `'denied'`, `'restricted'`) | `PermissionState { Undetermined, Granted, Denied }` | implemented — verified by CI run 44376377286 | `'restricted'` collapses into `Denied` |
+| `VisionCamera.cameraPermissionStatus`, `VisionCamera.requestCameraPermission(): Promise<boolean>` | `Backend::camera_permission` / `Backend::request_camera_permission`, bridged on Apple, Android, Windows, Linux and web | implemented — verified by CI run 44376377286 | |
+| `useCameraPermission()` (`status`, `requestPermission`, `hasPermission`, `canRequestPermission`) | TS `QrScanner.cameraPermission()` / `requestCameraPermission()`; `Granted` answers `hasPermission`, `Undetermined` answers `canRequestPermission` | implemented — verified by CI run 44376377286 | |
 | `useMicrophonePermission()` | none | no equivalent | a QR library has no microphone |
 
 ## Our error codes against both references
@@ -137,7 +137,7 @@ The ten `ERR_QR_*` codes, and the nearest thing each reference has:
 
 ## Ours beyond both references
 
-Neither reference generates codes, and both own their cameras. Everything below is implemented — awaiting first passing CI run.
+Neither reference generates codes, and both own their cameras. Everything below is implemented — verified by CI run 44376377286.
 
 | Ours | What it is |
 |---|---|
