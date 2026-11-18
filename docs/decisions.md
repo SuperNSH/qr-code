@@ -12,9 +12,9 @@ None.
 
 rqrr 0.11 is pure Rust and takes luma through `PreparedImage::prepare_from_greyscale`, so the `img` feature (and the `image` crate) stays off. qrcode 0.14 generates with the `std` and `svg` features only; its defaults pull `image`, which this library does not need.
 
-### NSH version: 0.5.1
+### NSH version: 0.6.0
 
-`nsh-core = "0.5.1"`, and CI installs the matching CLI (`NSH_VERSION: v0.5.1`). The pin moved from 0.4.0 to 0.5.0 on 2026-11-12, and to 0.5.1 on 2026-11-16, both with no source change.
+`nsh-core = "0.6.0"`, and CI installs the matching CLI (`NSH_VERSION: v0.6.0`). The pin moved from 0.4.0 to 0.5.0 on 2026-11-12, to 0.5.1 on 2026-11-16, and to 0.6.0 on 2026-11-18, all with no source change.
 
 ### Platforms in scope: Apple, Android, Windows, Linux, web
 
