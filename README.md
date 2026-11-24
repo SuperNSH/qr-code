@@ -13,6 +13,18 @@ What it does:
 
 No code in this repo captures frames. The `FrameSource` trait is defined here as the seam, and the camera repo ([SuperNSH/nsh-camera](https://github.com/SuperNSH/nsh-camera), a different repo) implements it for live capture. Until a backend registers a frame source, a scan answers `ERR_QR_UNSUPPORTED`.
 
+## Install
+
+In the app's directory:
+
+```sh
+nsh add nsh-qr-code
+```
+
+`nsh add` needs NSH main or the nightly: the 0.6.0 and 0.6.1 releases do not have it. In a Rust app, `cargo add nsh-qr-code` works with any of them.
+
+TSX code imports from `nsh-qr-code`.
+
 ## Status
 
 **Implemented, verified on CI.** CI run [44376377286](https://github.com/SuperNSH/qr-code/actions/runs/44376377286) on `master` (NSH 0.6.0) passed every job: format, `rust` on ubuntu, macOS and Windows (clippy `-D warnings` and `cargo test`), `check` for `aarch64-apple-ios`, `aarch64-linux-android` and `wasm32-unknown-unknown`, and `typescript` (`nsh check`, `nsh build` with no warnings, `nsh test`). Each edge-case test was also seen failing: run [44401068264](https://github.com/SuperNSH/qr-code/actions/runs/44401068264) broke the scan gate, the ECC pick and the timeout on purpose and went red in the Rust unit tests and the TS suite. Not verified: no live scan on any device, because the camera repo supplies frames; the tests scan fake frame sources.
