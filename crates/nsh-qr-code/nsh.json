@@ -1,5 +1,5 @@
 {
-  "nsh": ">=0.7",
+  "nsh": ">=0.7.1",
   "exports": {
     "nsh-qr-code": "tsx/index.ts",
     "nsh-qr-code/rust": "tsx/rust.ts",
